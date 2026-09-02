@@ -213,7 +213,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!settings.showTimer || !['quiz', 'bug', 'memory'].includes(mode) || screen !== 'game') return;
+    if (!settings.showTimer || !['quiz', 'bug', 'memory', 'typing'].includes(mode) || screen !== 'game') return;
     window.clearInterval(intervalRef.current);
     intervalRef.current = window.setInterval(() => {
       setTimeLeft((value) => {
