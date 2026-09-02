@@ -136,7 +136,11 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [scores, setScores] = useState(loadScores);
   const [settings, setSettings] = useState(loadSettings);
-  const [playerName, setPlayerName] = useState('Player');
+  
+  // Player name popup state
+  const [playerName, setPlayerName] = useState('');
+  const [pendingMode, setPendingMode] = useState(null);
+  const [showNameModal, setShowNameModal] = useState(false);
 
   const [quizIndex, setQuizIndex] = useState(0);
   const [bugIndex, setBugIndex] = useState(0);
@@ -153,6 +157,17 @@ function App() {
   const feedbackTimeoutRef = useRef(null);
   const audioContextRef = useRef(null);
   const audioReadyRef = useRef(false);
+
+  function selectMode(selectedMode) {
+    setPendingMode(selectedMode);
+    setShowNameModal(true);
+  }
+
+  function confirmStartGame() {
+    if (!playerName.trim()) return;
+    setShowNameModal(false);
+    startGame(pendingMode);
+  }
 
   function getAudioContext() {
     if (typeof window === 'undefined') return null;
@@ -445,7 +460,19 @@ function App() {
       </header>
 
       <main className="page">
-        {screen === 'home' && <HomeScreen difficulty={difficulty} setDifficulty={setDifficulty} startGame={startGame} scores={scores} />}
+        {screen === 'home' && (
+          <HomeScreen
+            difficulty={difficulty}
+            setDifficulty={setDifficulty}
+            selectMode={selectMode}
+            scores={scores}
+            showNameModal={showNameModal}
+            setShowNameModal={setShowNameModal}
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            confirmStartGame={confirmStartGame}
+          />
+        )}
         {screen === 'game' && (
           <GameScreen
             mode={mode}
@@ -484,7 +511,7 @@ function App() {
   );
 }
 
-function HomeScreen({ difficulty, setDifficulty, startGame, scores }) {
+function HomeScreen({ difficulty, setDifficulty, selectMode, scores, showNameModal, setShowNameModal, playerName, setPlayerName, confirmStartGame }) {
   const highScore = scores[0]?.score || 0;
   return (
     <section className="home-grid">
@@ -509,12 +536,36 @@ function HomeScreen({ difficulty, setDifficulty, startGame, scores }) {
           </div>
         </div>
         <div className="mode-grid">
-          <GameModeCard icon="🧠" title="Code Quiz" description="Race through developer questions." accent="violet" onClick={() => startGame('quiz')} />
-          <GameModeCard icon="🐞" title="Bug Hunter" description="Spot the bug before time runs out." accent="orange" onClick={() => startGame('bug')} />
-          <GameModeCard icon="⌨️" title="Code Sprint" description="Type snippets with speed and accuracy." accent="cyan" onClick={() => startGame('typing')} />
-          <GameModeCard icon="🧩" title="Memory Stack" description="Remember the sequence. Rebuild it." accent="pink" onClick={() => startGame('memory')} />
+          <GameModeCard icon="🧠" title="Code Quiz" description="Race through developer questions." accent="violet" onClick={() => selectMode('quiz')} />
+          <GameModeCard icon="🐞" title="Bug Hunter" description="Spot the bug before time runs out." accent="orange" onClick={() => selectMode('bug')} />
+          <GameModeCard icon="⌨️" title="Code Sprint" description="Type snippets with speed and accuracy." accent="cyan" onClick={() => selectMode('typing')} />
+          <GameModeCard icon="🧩" title="Memory Stack" description="Remember the sequence. Rebuild it." accent="pink" onClick={() => selectMode('memory')} />
         </div>
       </div>
+
+      {/* PLAYER NAME POPUP */}
+      {showNameModal && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <span className="eyebrow">PLAYER PROFILE</span>
+            <h2>Enter Your Name</h2>
+            <p>Your name will be visible on the leaderboard with your score.</p>
+            <input
+              type="text"
+              autoFocus
+              className="name-input"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && confirmStartGame()}
+              placeholder="Enter player name..."
+            />
+            <div className="modal-actions">
+              <button className="ghost-button" onClick={() => setShowNameModal(false)}>Cancel</button>
+              <button className="primary-button" onClick={confirmStartGame} disabled={!playerName.trim()}>Start Game →</button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
