@@ -101,7 +101,7 @@ kbd { width: 30px; height: 30px; display: grid; place-items: center; border-radi
 .result-card, .content-card { padding: clamp(24px, 6vw, 56px); }
 .result-card { text-align: center; max-width: 860px; margin: 40px auto; }
 .result-icon { font-size: 3.5rem; margin-bottom: 10px; }
-.result-card h1 { font-size: clamp(4rem, 12vw, 8rem); margin: 10px 0 0; letter-spacing: -.08em; background: linear-gradient(90deg, #f4f7fb, #a78bfa); -webkit-background-clip: text; color: transparent; }
+.result-card h1 { font-size: clamp(4rem, 12vw, 8rem); margin: 10px 0 0; letter-spacing: -.08em; background: linear-gradient(90deg, #f4f7fb, #a78bfa);  color: transparent; }
 .result-message { color: var(--muted); }
 .result-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin: 28px 0; text-align: left; }
 .result-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }

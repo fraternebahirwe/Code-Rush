@@ -216,10 +216,19 @@ function App() {
   }
 
   const difficultyConfig = useMemo(() => ({
-    easy: { quizTime: 35, bugTime: 30, typeBonus: 1, memoryTime: 4 },
-    normal: { quizTime: 25, bugTime: 22, typeBonus: 1.2, memoryTime: 3 },
-    hard: { quizTime: 18, bugTime: 16, typeBonus: 1.5, memoryTime: 2 },
+    easy: { quizTime: 35, bugTime: 30, typingTime: 30, typeBonus: 1, memoryTime: 10, memoryInputTime: 15 },
+    normal: { quizTime: 25, bugTime: 22, typingTime: 20, typeBonus: 1.2, memoryTime: 8, memoryInputTime: 12 },
+    hard: { quizTime: 18, bugTime: 16, typingTime: 10, typeBonus: 1.5, memoryTime: 5, memoryInputTime: 8 },
   }[difficulty]), [difficulty]);
+
+  const modeTimeLimit = useMemo(() => {
+    if (!mode) return 30;
+    if (mode === 'quiz') return difficultyConfig.quizTime;
+    if (mode === 'bug') return difficultyConfig.bugTime;
+    if (mode === 'typing') return difficultyConfig.typingTime;
+    if (mode === 'memory') return memoryPhase === 'show' ? difficultyConfig.memoryTime : difficultyConfig.memoryInputTime;
+    return 30;
+  }, [mode, memoryPhase, difficultyConfig]);
 
   useEffect(() => () => {
     window.clearInterval(intervalRef.current);
@@ -281,7 +290,18 @@ function App() {
     setFeedback(null);
     setQuizIndex(0);
     setBugIndex(0);
-    setTimeLeft(selectedMode === 'quiz' ? difficultyConfig.quizTime : selectedMode === 'bug' ? difficultyConfig.bugTime : selectedMode === 'memory' ? difficultyConfig.memoryTime : 60);
+    
+    const initialTime = selectedMode === 'quiz' 
+      ? difficultyConfig.quizTime 
+      : selectedMode === 'bug' 
+      ? difficultyConfig.bugTime 
+      : selectedMode === 'typing' 
+      ? difficultyConfig.typingTime 
+      : selectedMode === 'memory' 
+      ? difficultyConfig.memoryTime 
+      : 30;
+      
+    setTimeLeft(initialTime);
     setTypedText('');
     setTypeStartedAt(null);
     setTypeComplete(false);
@@ -299,10 +319,10 @@ function App() {
     if (screen !== 'game' || mode !== 'memory' || memoryPhase !== 'show') return;
     const timer = window.setTimeout(() => {
       setMemoryPhase('input');
-      setTimeLeft(Math.max(8, difficulty === 'hard' ? 8 : 12));
+      setTimeLeft(difficultyConfig.memoryInputTime);
     }, difficultyConfig.memoryTime * 1000);
     return () => window.clearTimeout(timer);
-  }, [screen, mode, memoryPhase, round, difficultyConfig.memoryTime, difficulty]);
+  }, [screen, mode, memoryPhase, round, difficultyConfig]);
 
   function showFeedback(type, message) {
     playTone(type === 'correct' ? 'correct' : 'wrong');
@@ -340,6 +360,7 @@ function App() {
     feedbackTimeoutRef.current = window.setTimeout(() => setFeedback(null), 1200);
     if (mode === 'quiz') nextQuiz();
     if (mode === 'bug') nextBug();
+    if (mode === 'typing') nextTyping();
     if (mode === 'memory') nextMemory();
   }
 
@@ -379,6 +400,14 @@ function App() {
     setTimeLeft(difficultyConfig.bugTime);
   }
 
+  function nextTyping() {
+    setRound((value) => value + 1);
+    setTypedText('');
+    setTypeStartedAt(null);
+    setTypeComplete(false);
+    setTimeLeft(difficultyConfig.typingTime);
+  }
+
   function handleTypingChange(event) {
     const value = event.target.value;
     if (!typeStartedAt && value.length) setTypeStartedAt(Date.now());
@@ -391,12 +420,7 @@ function App() {
       setTypeComplete(true);
       playTone('complete');
       showFeedback('correct', `${wpm} WPM — clean run!`);
-      window.setTimeout(() => {
-        setRound((value) => value + 1);
-        setTypedText('');
-        setTypeStartedAt(null);
-        setTypeComplete(false);
-      }, 900);
+      window.setTimeout(nextTyping, 900);
     }
   }
 
@@ -482,6 +506,7 @@ function App() {
             lives={lives}
             round={round}
             timeLeft={timeLeft}
+            totalTime={modeTimeLimit}
             settings={settings}
             currentQuiz={currentQuiz}
             currentBug={currentBug}
@@ -553,7 +578,7 @@ function HomeScreen({ difficulty, setDifficulty, selectMode, scores, showNameMod
             <input
               type="text"
               autoFocus
-              className="name-input"
+              className="modal-input"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && confirmStartGame()}
@@ -583,11 +608,11 @@ function GameModeCard({ icon, title, description, accent, onClick }) {
 
 function GameScreen(props) {
   const {
-    mode, score, streak, lives, round, timeLeft, settings, currentQuiz, currentBug, currentType,
+    mode, score, streak, lives, round, timeLeft, totalTime, settings, currentQuiz, currentBug, currentType,
     typedText, typeComplete, memoryItems, memoryPhase, memoryInput, setMemoryInput,
     chooseQuiz, chooseBug, handleTypingChange, submitMemory, feedback, comboPulse, onExit,
   } = props;
-  const progress = clamp((timeLeft / 30) * 100, 0, 100);
+  const progress = clamp((timeLeft / (totalTime || 30)) * 100, 0, 100);
   return (
     <section className="game-screen">
       <div className="game-topline">
