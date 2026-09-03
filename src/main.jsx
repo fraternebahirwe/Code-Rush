@@ -568,9 +568,17 @@ function HomeScreen({ difficulty, setDifficulty, selectMode, scores, showNameMod
   return (
     <section className="home-grid">
       <div className="hero-card">
-        <div className="eyebrow"><span className="pulse-dot" /> READY TO CODE</div>
-        <h1>Think fast.<br /><span>Code faster.</span></h1>
-        <p>Four fast-paced developer challenges designed to sharpen your JavaScript, React, SQL, Git and problem-solving skills.</p>
+        <div className="eyebrow">
+          <span className="pulse-dot" /> 
+          READY TO CODE
+        </div>
+        <h1>
+          Think fast.<br />
+          <span>Code faster.</span>
+        </h1>
+        <p>
+          Four fast-paced developer challenges designed to sharpen your JavaScript, React, SQL, Git and problem-solving skills.
+        </p>
         <div className="hero-meta">
           <div><strong>{scores.length}</strong><span>Scores saved</span></div>
           <div><strong>{highScore.toLocaleString()}</strong><span>Best score</span></div>
@@ -680,7 +688,7 @@ function QuizChallenge({ question, choose }) {
       <div className="answer-grid">
         {question.options.map((option, index) => <button key={option} className="answer-button" onClick={() => choose(option)}><kbd>{index + 1}</kbd><span>{option}</span></button>)}
       </div>
-      <p className="hint">Press 1–4 to answer.</p>
+      <p className="hint">Press 1-2-3-4 to answer.</p>
     </div>
   );
 }
