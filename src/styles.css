@@ -141,20 +141,44 @@ kbd { width: 30px; height: 30px; display: grid; place-items: center; border-radi
   filter: drop-shadow(0 10px 20px rgba(139, 92, 246, 0.3));
 }
 
+/* Player Badge inside the Result Card */
+.player-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 6px 16px;
+  border-radius: 99px;
+  color: #c4b5fd;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  margin: 6px auto 14px;
+}
+
+.result-card .eyebrow {
+  display: block;
+  margin-top: 4px;
+}
+
 .result-card h1 {
   font-size: clamp(4.5rem, 10vw, 7rem);
   margin: 12px 0 0;
   line-height: 0.95;
   letter-spacing: -0.06em;
   background: linear-gradient(135deg, #ffffff 30%, #c4b5fd 70%, #8b5cf6 100%);
+
   -webkit-text-fill-color: transparent;
   text-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
 }
 
 .result-message {
-  color: var(--muted);
-  font-size: 1.05rem;
-  margin: 12px 0 28px;
+  color: #a9b2c7;
+  font-size: 1.15rem;
+  font-weight: 500;
+  margin: 10px 0 24px;
 }
 
 .result-stats {
