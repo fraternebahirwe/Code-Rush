@@ -544,7 +544,17 @@ function App() {
           />
         )}
         {screen === 'result' && (
-          <ResultScreen score={score} accuracy={accuracy} correct={correct} wrong={wrong} bestCombo={bestCombo} mode={mode} onPlayAgain={() => startGame(mode)} onHome={goHome} />
+          <ResultScreen 
+            score={score} 
+            accuracy={accuracy} 
+            correct={correct} 
+            wrong={wrong} 
+            bestCombo={bestCombo} 
+            mode={mode} 
+            playerName={playerName}
+            onPlayAgain={() => startGame(mode)} 
+            onHome={goHome} 
+          />
         )}
         {screen === 'scores' && <ScoresScreen scores={scores} resetScores={resetScores} onBack={goHome} />}
         {screen === 'settings' && <SettingsScreen settings={settings} setSettings={setSettings} onBack={goHome} />}
@@ -720,13 +730,28 @@ function MemoryChallenge({ items, phase, value, setValue, submit }) {
   );
 }
 
-function ResultScreen({ score, accuracy, correct, wrong, bestCombo, mode, onPlayAgain, onHome }) {
+function ResultScreen({ score, accuracy, correct, wrong, bestCombo, mode, playerName, onPlayAgain, onHome }) {
+  const total = correct + wrong;
+  const ratio = total > 0 ? correct / total : 0;
+  const name = playerName.trim() || 'Player';
+
+  let feedbackMsg = '';
+  if (ratio === 1) {
+    feedbackMsg = `${name}, Great job!`;
+  } else if (ratio >= 0.75) {
+    feedbackMsg = `${name}, Continue like that!`;
+  } else if (ratio < 0.5) {
+    feedbackMsg = `${name}, Do your best next time!`;
+  } else {
+    feedbackMsg = `${name}, Good effort!`;
+  }
+
   return (
     <section className="result-card">
       <div className="result-icon">🏆</div>
       <span className="eyebrow">RUN COMPLETE</span>
       <h1>{score.toLocaleString()}</h1>
-      <p className="result-message">Nice run. Your score has been saved locally.</p>
+      <p className="result-message">{feedbackMsg}</p>
       <div className="result-stats">
         <StatBox label="ACCURACY" value={`${accuracy}%`} />
         <StatBox label="CORRECT" value={correct} />
