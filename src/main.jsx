@@ -136,8 +136,7 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [scores, setScores] = useState(loadScores);
   const [settings, setSettings] = useState(loadSettings);
-  
-  // Player name popup state
+
   const [playerName, setPlayerName] = useState('');
   const [pendingMode, setPendingMode] = useState(null);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -260,19 +259,19 @@ function App() {
     const handler = (event) => {
       if (screen !== 'game') return;
       if (mode === 'quiz' && ['1', '2', '3', '4'].includes(event.key)) {
-        chooseQuiz(QUIZ_QUESTIONS[quizIndex].options[Number(event.key) - 1]);
+        chooseQuiz(QUIZ_QUESTIONS[quizIndex]?.options[Number(event.key) - 1]);
       }
       if (mode === 'bug' && ['1', '2', '3', '4'].includes(event.key)) {
-        chooseBug(BUG_CHALLENGES[bugIndex].options[Number(event.key) - 1]);
+        chooseBug(BUG_CHALLENGES[bugIndex]?.options[Number(event.key) - 1]);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   });
 
-  const currentQuiz = QUIZ_QUESTIONS[quizIndex % QUIZ_QUESTIONS.length];
-  const currentBug = BUG_CHALLENGES[bugIndex % BUG_CHALLENGES.length];
-  const currentType = TYPE_SNIPPETS[(round - 1) % TYPE_SNIPPETS.length];
+  const currentQuiz = QUIZ_QUESTIONS[quizIndex];
+  const currentBug = BUG_CHALLENGES[bugIndex];
+  const currentType = TYPE_SNIPPETS[round - 1];
   const accuracy = correct + wrong ? Math.round((correct / (correct + wrong)) * 100) : 0;
 
   function startGame(selectedMode) {
@@ -290,7 +289,7 @@ function App() {
     setFeedback(null);
     setQuizIndex(0);
     setBugIndex(0);
-    
+
     const initialTime = selectedMode === 'quiz' 
       ? difficultyConfig.quizTime 
       : selectedMode === 'bug' 
@@ -300,16 +299,17 @@ function App() {
       : selectedMode === 'memory' 
       ? difficultyConfig.memoryTime 
       : 30;
-      
+
     setTimeLeft(initialTime);
     setTypedText('');
     setTypeStartedAt(null);
     setTypeComplete(false);
-    setMemoryRound();
+    setMemoryRound(1);
   }
 
-  function setMemoryRound() {
-    const source = MEMORY_PATTERNS[(round - 1) % MEMORY_PATTERNS.length];
+  function setMemoryRound(targetRound = round) {
+    const source = MEMORY_PATTERNS[(targetRound - 1)];
+    if (!source) return;
     setMemoryItems([...source].sort(() => Math.random() - 0.5));
     setMemoryInput('');
     setMemoryPhase('show');
@@ -365,7 +365,7 @@ function App() {
   }
 
   function chooseQuiz(option) {
-    if (feedback) return;
+    if (feedback || !currentQuiz) return;
     if (option === currentQuiz.answer) {
       award(100 + streak * 20 + timeLeft * 3);
       showFeedback('correct', 'Correct!');
@@ -377,13 +377,17 @@ function App() {
   }
 
   function nextQuiz() {
-    setQuizIndex((value) => (value + 1) % QUIZ_QUESTIONS.length);
-    setRound((value) => value + 1);
-    setTimeLeft(difficultyConfig.quizTime);
+    if (quizIndex + 1 >= QUIZ_QUESTIONS.length) {
+      endGame();
+    } else {
+      setQuizIndex((value) => value + 1);
+      setRound((value) => value + 1);
+      setTimeLeft(difficultyConfig.quizTime);
+    }
   }
 
   function chooseBug(option) {
-    if (feedback) return;
+    if (feedback || !currentBug) return;
     if (option === currentBug.answer) {
       award(130 + streak * 25 + timeLeft * 4);
       showFeedback('correct', 'Bug fixed!');
@@ -395,17 +399,25 @@ function App() {
   }
 
   function nextBug() {
-    setBugIndex((value) => (value + 1) % BUG_CHALLENGES.length);
-    setRound((value) => value + 1);
-    setTimeLeft(difficultyConfig.bugTime);
+    if (bugIndex + 1 >= BUG_CHALLENGES.length) {
+      endGame();
+    } else {
+      setBugIndex((value) => value + 1);
+      setRound((value) => value + 1);
+      setTimeLeft(difficultyConfig.bugTime);
+    }
   }
 
   function nextTyping() {
-    setRound((value) => value + 1);
-    setTypedText('');
-    setTypeStartedAt(null);
-    setTypeComplete(false);
-    setTimeLeft(difficultyConfig.typingTime);
+    if (round >= TYPE_SNIPPETS.length) {
+      endGame();
+    } else {
+      setRound((value) => value + 1);
+      setTypedText('');
+      setTypeStartedAt(null);
+      setTypeComplete(false);
+      setTimeLeft(difficultyConfig.typingTime);
+    }
   }
 
   function handleTypingChange(event) {
@@ -438,9 +450,14 @@ function App() {
   }
 
   function nextMemory() {
-    setRound((value) => value + 1);
-    setTimeLeft(difficultyConfig.memoryTime);
-    setMemoryRound();
+    if (round >= MEMORY_PATTERNS.length) {
+      endGame();
+    } else {
+      const nextR = round + 1;
+      setRound(nextR);
+      setTimeLeft(difficultyConfig.memoryTime);
+      setMemoryRound(nextR);
+    }
   }
 
   function endGame() {
@@ -568,7 +585,6 @@ function HomeScreen({ difficulty, setDifficulty, selectMode, scores, showNameMod
         </div>
       </div>
 
-      {/* PLAYER NAME POPUP */}
       {showNameModal && (
         <div className="modal-overlay">
           <div className="modal-card">
@@ -631,9 +647,9 @@ function GameScreen(props) {
       {settings.showTimer && <div className="timer-line"><span style={{ width: `${progress}%` }} /></div>}
 
       <div className="challenge-card">
-        {mode === 'quiz' && <QuizChallenge question={currentQuiz} choose={chooseQuiz} />}
-        {mode === 'bug' && <BugChallenge challenge={currentBug} choose={chooseBug} />}
-        {mode === 'typing' && <TypingChallenge snippet={currentType} value={typedText} onChange={handleTypingChange} complete={typeComplete} />}
+        {mode === 'quiz' && currentQuiz && <QuizChallenge question={currentQuiz} choose={chooseQuiz} />}
+        {mode === 'bug' && currentBug && <BugChallenge challenge={currentBug} choose={chooseBug} />}
+        {mode === 'typing' && currentType && <TypingChallenge snippet={currentType} value={typedText} onChange={handleTypingChange} complete={typeComplete} />}
         {mode === 'memory' && <MemoryChallenge items={memoryItems} phase={memoryPhase} value={memoryInput} setValue={setMemoryInput} submit={submitMemory} />}
       </div>
 
