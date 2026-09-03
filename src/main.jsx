@@ -702,7 +702,7 @@ function BugChallenge({ challenge, choose }) {
       <div className="answer-grid">
         {challenge.options.map((option, index) => <button key={option} className="answer-button" onClick={() => choose(option)}><kbd>{index + 1}</kbd><span>{option}</span></button>)}
       </div>
-      <p className="hint">Press 1–4 to choose the fix.</p>
+      <p className="hint">Press 1-2-3-4  to choose the fix.</p>
     </div>
   );
 }
@@ -778,11 +778,32 @@ function ResultScreen({ score, accuracy, correct, wrong, bestCombo, mode, player
 function ScoresScreen({ scores, resetScores, onBack }) {
   return (
     <section className="content-card">
-      <div className="page-heading"><div><span className="eyebrow">LOCAL LEADERBOARD</span><h1>High Scores</h1></div><button className="ghost-button" onClick={onBack}>← Home</button></div>
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">LOCAL LEADERBOARD</span>
+          <h1>High Scores</h1>
+        </div>
+        <button className="ghost-button" onClick={onBack}>← Home</button>
+      </div>
       {scores.length ? (
         <div className="score-table">
-          <div className="score-row table-head"><span>#</span><span>PLAYER</span><span>MODE</span><span>DIFFICULTY</span><span>SCORE</span></div>
-          {scores.map((entry, index) => <div className="score-row" key={`${entry.date}-${index}`}><span>#{index + 1}</span><span className="player-cell">{index === 0 ? '👑 ' : ''}{entry.name}</span><span>{entry.mode}</span><span>{entry.difficulty}</span><strong>{entry.score.toLocaleString()}</strong></div>)}
+          <div className="score-row table-head">
+            <span>#</span>
+            <span>PLAYER</span>
+            <span>MODE</span>
+            <span>DIFFICULTY</span>
+            <span>SCORE</span>
+          </div>
+          {scores.map((entry, index) => 
+          <div className="score-row" key={`${entry.date}-${index}`}>
+            <span>#{index + 1}</span>
+            <span className="player-cell">
+              {index === 0 ? '👑 ' : ''}{entry.name}
+            </span>
+            <span>{entry.mode}</span>
+            <span>{entry.difficulty}</span>
+            <strong>{entry.score.toLocaleString()}</strong>
+          </div>)}
         </div>
       ) : <div className="empty-state">No scores yet. Start a challenge and claim the top spot.</div>}
       {scores.length > 0 && <button className="danger-button" onClick={resetScores}>Clear saved scores</button>}
@@ -793,10 +814,28 @@ function ScoresScreen({ scores, resetScores, onBack }) {
 function SettingsScreen({ settings, setSettings, onBack }) {
   return (
     <section className="content-card narrow">
-      <div className="page-heading"><div><span className="eyebrow">PREFERENCES</span><h1>Settings</h1></div><button className="ghost-button" onClick={onBack}>← Home</button></div>
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">PREFERENCES</span>
+          <h1>Settings</h1>
+        </div>
+        <button className="ghost-button" onClick={onBack}>← Home</button>
+      </div>
       <div className="settings-list">
-        <label className="setting-row"><span><strong>Show timer</strong><small>Keep the countdown visible during timed modes.</small></span><input type="checkbox" checked={settings.showTimer} onChange={(event) => setSettings((value) => ({ ...value, showTimer: event.target.checked }))} /></label>
-        <label className="setting-row"><span><strong>Sound effects</strong><small>Plays lightweight browser-generated tones during the game.</small></span><input type="checkbox" checked={settings.sound} onChange={(event) => { const enabled = event.target.checked; setSettings((value) => ({ ...value, sound: enabled })); if (enabled) { unlockAudio(); window.setTimeout(() => playTone('ui'), 20); } }} /></label>
+        <label className="setting-row">
+          <span>
+            <strong>Show timer</strong>
+            <small>Keep the countdown visible during timed modes.</small>
+          </span>
+          <input type="checkbox" checked={settings.showTimer} onChange={(event) => setSettings((value) => ({ ...value, showTimer: event.target.checked }))} />
+        </label>
+        <label className="setting-row">
+          <span>
+            <strong>Sound effects</strong>
+            <small>Plays lightweight browser-generated tones during the game.</small>
+          </span>
+          <input type="checkbox" checked={settings.sound} onChange={(event) => { const enabled = event.target.checked; setSettings((value) => ({ ...value, sound: enabled })); if (enabled) { unlockAudio(); window.setTimeout(() => playTone('ui'), 20); } }} />
+        </label>
       </div>
     </section>
   );
